@@ -18,7 +18,7 @@ Msg
 </pre>
 
 
-Pack(mType int32, mContent []byte) []byte
+func Pack(mType int32, mContent []byte) []byte
 ------------------------------------------
 
 use Pack to pack struct Msg to bytes for Conn.Write().
