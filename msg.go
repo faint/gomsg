@@ -2,9 +2,9 @@
 package msg
 
 import (
-	"bytes"
-	"encoding/binary"
-	"errors"
+	"bytes"           // bytes.NewBuffer
+	"encoding/binary" // binary.Read
+	"errors"          // errors.New
 )
 
 const (
