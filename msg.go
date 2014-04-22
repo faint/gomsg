@@ -66,13 +66,13 @@ func Pack(mType int32, mContent []byte) []byte {
 func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
-		return []byte{}
+		return Msg{}
 	}
 	defer conn.Close()
 
 	SingleWrite(conn, b)
 
-	m = SingleRead(conn)
+	m := SingleRead(conn)
 	return m
 }
 
@@ -88,7 +88,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	b := make([]byte, SIZE_OF_HEAD)
 	_, e := conn.Read(b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
-		return []byte{}
+		return Msg{}
 	}
 	buf := bytes.NewBuffer(b)
 	// 消息类型
@@ -103,7 +103,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	b = make([]byte, int(m.Size))
 	_, e = conn.Read(b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
-		return []byte{}
+		return Msg
 	}
 	m.Content = b
 
