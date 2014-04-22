@@ -6,11 +6,8 @@ import (
 	"encoding/binary" // binary.Read
 	"errors"          // errors.New
 
-	"io"   // io.EOF
-	"net"  // TCP
-	"time" // time.Sleep
-
-	"fmt"
+	"io"  // io.EOF
+	"net" // TCP
 )
 
 const (
@@ -66,7 +63,7 @@ func Pack(mType int32, mContent []byte) []byte {
 	return b
 }
 
-func SingleRequest(addr net.TCPAddr, b []byte) []byte {
+func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
 		return []byte{}
@@ -75,8 +72,8 @@ func SingleRequest(addr net.TCPAddr, b []byte) []byte {
 
 	SingleWrite(conn, b)
 
-	b = SingleRead(conn)
-	return b
+	m = SingleRead(conn)
+	return m
 }
 
 func SingleWrite(conn *net.TCPConn, b []byte) []byte {
@@ -88,7 +85,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 
 	m := Msg{}
 
-	b := make([]byte, msg.SIZE_OF_HEAD)
+	b := make([]byte, SIZE_OF_HEAD)
 	_, e := conn.Read(b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
 		return []byte{}
