@@ -5,6 +5,12 @@ import (
 	"bytes"           // bytes.NewBuffer
 	"encoding/binary" // binary.Read
 	"errors"          // errors.New
+
+	"io"   // io.EOF
+	"net"  // TCP
+	"time" // time.Sleep
+
+	"fmt"
 )
 
 const (
@@ -58,4 +64,59 @@ func Pack(mType int32, mContent []byte) []byte {
 	binary.Write(buf, binary.LittleEndian, mContent)
 	b := buf.Bytes()
 	return b
+}
+
+func SingleRequest(addr net.TCPAddr, b []byte) []byte {
+	conn, e := net.DialTCP("tcp", nil, &addr)
+	if e != nil {
+		return []byte{}
+	}
+	defer conn.Close()
+
+	SingleWrite(conn, b)
+
+	b = SingleRead(conn)
+	return b
+}
+
+func SingleWrite(conn *net.TCPConn, b []byte) []byte {
+	conn.Write(b)
+	return b
+}
+
+func SingleRead(conn *net.TCPConn) Msg {
+
+	m := Msg{}
+
+	b := make([]byte, msg.SIZE_OF_HEAD)
+	_, e := conn.Read(b)
+	if e != nil && e != io.EOF { // 网络有错,则退出循环
+		return []byte{}
+	}
+	buf := bytes.NewBuffer(b)
+	// 消息类型
+	mType := buf.Next(SIZE_OF_TYPE)
+	bufType := bytes.NewBuffer(mType)
+	binary.Read(bufType, binary.LittleEndian, &m.Type)
+	// 消息大小
+	mSize := buf.Next(SIZE_OF_SIZE)
+	bufSize := bytes.NewBuffer(mSize)
+	binary.Read(bufSize, binary.LittleEndian, &m.Size)
+
+	b = make([]byte, int(m.Size))
+	_, e = conn.Read(b)
+	if e != nil && e != io.EOF { // 网络有错,则退出循环
+		return []byte{}
+	}
+	m.Content = b
+
+	return m
+}
+
+func CopyBytes(a, b []byte) []byte {
+	n := len(a)
+	result := make([]byte, n+len(b))
+	copy(result, a)
+	copy(result[n:], b)
+	return result
 }
