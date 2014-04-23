@@ -8,6 +8,8 @@ import (
 
 	"io"  // io.EOF
 	"net" // TCP
+
+	"time" //
 )
 
 const (
@@ -86,10 +88,17 @@ func SingleRead(conn *net.TCPConn) Msg {
 	m := Msg{}
 
 	b := make([]byte, SIZE_OF_HEAD)
-	_, e := conn.Read(b)
-	if e != nil && e != io.EOF { // 网络有错,则退出循环
-		return Msg{}
+	for { // 循环到读取到内容为止
+		i, e := conn.Read(b)
+		if e != nil && e != io.EOF { // 网络有错,则退出循环
+			return Msg{}
+		}
+		if i > 0 { // 读到内容则退出读取循环
+			break
+		}
+
 	}
+
 	buf := bytes.NewBuffer(b)
 	// 消息类型
 	mType := buf.Next(SIZE_OF_TYPE)
