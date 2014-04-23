@@ -77,6 +77,7 @@ func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	SingleWrite(conn, b)
 
 	m := SingleRead(conn)
+	fmt.Println("SingleRequest.m:", m)
 	return m
 }
 
