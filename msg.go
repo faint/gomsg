@@ -114,7 +114,8 @@ func SingleRead(conn *net.TCPConn) Msg {
 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 
 	b = make([]byte, int(m.Size))
-	_, e := conn.Read(b)
+	b, e := conn.Read(b)
+	fmt.Println("i,e,b:", i, e, b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
 		return Msg{}
 	}
