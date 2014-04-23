@@ -77,6 +77,7 @@ func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	SingleWrite(conn, b)
 
 	m := SingleRead(conn)
+	fmt.Println("SingleRequest.m:", m)
 	return m
 }
 
@@ -92,6 +93,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	b := make([]byte, SIZE_OF_HEAD)
 	for { // 循环到读取到内容为止
 		i, e := conn.Read(b)
+		fmt.Println("i,e:", i, e)
 		if e != nil && e != io.EOF { // 网络有错,则退出循环
 			return Msg{}
 		}
