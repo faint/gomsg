@@ -70,7 +70,7 @@ func Pack(mType int32, mContent []byte) []byte {
 func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
-		fmt.Println("SingleRequest.DialTCP:", e)
+		fmt.Printf("SingleRequest.DialTCP:%v", e)
 		return Msg{}
 	}
 	defer conn.Close()
@@ -78,7 +78,6 @@ func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	SingleWrite(conn, b)
 
 	m := SingleRead(conn)
-	fmt.Println("SingleRequest.m:", m)
 	return m
 }
 
@@ -95,6 +94,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	for { // 循环到读取到内容为止
 		i, e := conn.Read(b)
 		if e != nil && e != io.EOF { // 网络有错,则退出循环
+			fmt.Printf("msg.SingleRead:%v", e)
 			return Msg{}
 		}
 
@@ -118,6 +118,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	i, e := conn.Read(b)
 	fmt.Println("i,e,b:", i, e, b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
+		fmt.Printf("msg.SingleRead:%v", e)
 		return Msg{}
 	}
 	m.Content = b
