@@ -93,7 +93,6 @@ func SingleRead(conn *net.TCPConn) Msg {
 	b := make([]byte, SIZE_OF_HEAD)
 	for { // 循环到读取到内容为止
 		i, e := conn.Read(b)
-		fmt.Println("i,e:", i, e)
 		if e != nil && e != io.EOF { // 网络有错,则退出循环
 			return Msg{}
 		}
@@ -103,7 +102,6 @@ func SingleRead(conn *net.TCPConn) Msg {
 		}
 		time.Sleep(50 * time.Microsecond)
 	}
-	fmt.Println("read:", b)
 
 	buf := bytes.NewBuffer(b)
 	// 消息类型
