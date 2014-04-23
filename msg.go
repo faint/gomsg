@@ -70,6 +70,7 @@ func Pack(mType int32, mContent []byte) []byte {
 func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
+		fmt.Println("SingleRequest.DialTCP:", e)
 		return Msg{}
 	}
 	defer conn.Close()
