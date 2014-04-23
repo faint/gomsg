@@ -116,7 +116,6 @@ func SingleRead(conn *net.TCPConn) Msg {
 
 	b = make([]byte, int(m.Size))
 	i, e := conn.Read(b)
-	fmt.Println("i,e,b:", i, e, b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
 		fmt.Printf("msg.SingleRead:%v", e)
 		return Msg{}
