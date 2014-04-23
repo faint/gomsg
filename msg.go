@@ -96,7 +96,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 		if i > 0 { // 读到内容则退出读取循环
 			break
 		}
-
+		time.Sleep(50 * time.Microsecond)
 	}
 
 	buf := bytes.NewBuffer(b)
@@ -110,7 +110,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 
 	b = make([]byte, int(m.Size))
-	_, e = conn.Read(b)
+	_, e := conn.Read(b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
 		return Msg{}
 	}
