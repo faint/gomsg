@@ -9,7 +9,9 @@ import (
 	"io"  // io.EOF
 	"net" // TCP
 
-	"time" //
+	"time" // time.Sleep
+
+	"fmt"
 )
 
 const (
@@ -93,11 +95,13 @@ func SingleRead(conn *net.TCPConn) Msg {
 		if e != nil && e != io.EOF { // 网络有错,则退出循环
 			return Msg{}
 		}
+
 		if i > 0 { // 读到内容则退出读取循环
 			break
 		}
 		time.Sleep(50 * time.Microsecond)
 	}
+	fmt.Println("read:", b)
 
 	buf := bytes.NewBuffer(b)
 	// 消息类型
