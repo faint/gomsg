@@ -105,10 +105,12 @@ func SingleRead(conn *net.TCPConn) Msg {
 	}
 
 	buf := bytes.NewBuffer(b)
+
 	// 消息类型
 	mType := buf.Next(SIZE_OF_TYPE)
 	bufType := bytes.NewBuffer(mType)
 	binary.Read(bufType, binary.LittleEndian, &m.Type)
+
 	// 消息大小
 	mSize := buf.Next(SIZE_OF_SIZE)
 	bufSize := bytes.NewBuffer(mSize)
@@ -118,7 +120,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 		return m
 	}
 
-	b = make([]byte, int(m.Size))
+	b = make([]byte, int(m.Size-SIZE_OF_HEAD))
 	_, e := conn.Read(b)
 	if e != nil && e != io.EOF { // 网络有错,则退出循环
 		fmt.Printf("msg.SingleRead:%v", e)
