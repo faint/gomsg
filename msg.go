@@ -48,6 +48,9 @@ func UnPack(b []byte) (Msg, error) {
 	mContent := buf.Bytes()
 	rest := int(m.Size - int32(SIZE_OF_HEAD))
 	if rest > 0 {
+		if rest > len(mContent)-1 {
+			rest = len(mContent) - 1
+		}
 		m.Content = mContent[:rest]
 	}
 	return m, nil
@@ -73,6 +76,9 @@ func UnPackUnLimited(b []byte) (Msg, error) {
 	mContent := buf.Bytes()
 	rest := int(m.Size - int32(SIZE_OF_HEAD))
 	if rest > 0 {
+		if rest > len(mContent)-1 {
+			rest = len(mContent) - 1
+		}
 		m.Content = mContent[:rest]
 	}
 	return m, nil
