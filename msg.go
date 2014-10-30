@@ -201,7 +201,7 @@ func CopyBytes(a, b []byte) []byte {
 func PackMsgBig(mContent []byte) []byte {
 	buf := new(bytes.Buffer)
 	// 消息大小
-	mSize := int32(SIZE_OF_SIZE_BIG + len(mContent))
+	mSize := int64(SIZE_OF_SIZE_BIG + len(mContent))
 	binary.Write(buf, binary.LittleEndian, mSize)
 	// 消息正文
 	binary.Write(buf, binary.LittleEndian, mContent)
