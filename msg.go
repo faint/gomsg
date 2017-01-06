@@ -1,4 +1,4 @@
-// 读取连接，解析出消息头，返回消息正文和消息类型
+// Package msg 读取连接，解析出消息头，返回消息正文和消息类型
 package msg
 
 import (
@@ -15,49 +15,49 @@ import (
 )
 
 const (
-	MAX_BUFFER   = 1024 // 读取缓存最大值
-	SIZE_OF_TYPE = 4    // sizeof int32
-	SIZE_OF_SIZE = 4    // sizeof int32
-	SIZE_OF_HEAD = SIZE_OF_TYPE + SIZE_OF_SIZE
+	maxBuffer = 1024 // 读取缓存最大值
+	sizeType  = 4    // sizeof int32
+	sizeSize  = 4    // sizeof int32
+	sizeHead  = sizeType + sizeSize
 )
 
 const (
-	MAX_BUFFER_BIG   = 2147483647
-	SIZE_OF_SIZE_BIG = 8
+	maxBufferBIG = 2147483647
+	sizeSizeBIG  = 8
 )
 
-// 消息的结构
+// Msg 消息的结构
 type Msg struct {
 	Type    int32  // 消息类型
 	Size    int32  // 消息大小（含消息类型和消息大小自身
 	Content []byte // 消息正文
 }
 
-// 用以存储的消息结构
-type MsgBig struct {
+// Big 用以存储的消息结构
+type Big struct {
 	Size    int32  //消息大小
 	Content []byte //消息正文
 }
 
-// 解包消息，返回Msg类型
+// UnPack 解包消息，返回Msg类型
 func UnPack(b []byte) (Msg, error) {
 	m := Msg{}
 	buf := bytes.NewBuffer(b)
 	// 消息类型
-	mType := buf.Next(SIZE_OF_TYPE)
+	mType := buf.Next(sizeType)
 	bufType := bytes.NewBuffer(mType)
 	binary.Read(bufType, binary.LittleEndian, &m.Type)
 	// 消息大小
-	mSize := buf.Next(SIZE_OF_SIZE)
+	mSize := buf.Next(sizeSize)
 	bufSize := bytes.NewBuffer(mSize)
 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 	// 超限则返回错误
-	if m.Size > MAX_BUFFER {
-		return m, errors.New("OVER_MAX_BUFFER")
+	if m.Size > maxBuffer {
+		return m, errors.New("OVER_maxBuffer")
 	}
 	// 消息正文
 	mContent := buf.Bytes()
-	rest := int(m.Size - int32(SIZE_OF_HEAD))
+	rest := int(m.Size - int32(sizeHead))
 	if rest > 0 {
 		if rest > len(mContent)-1 {
 			m.Content = mContent
@@ -73,20 +73,20 @@ func UnPack(b []byte) (Msg, error) {
 // 	m := Msg{}
 // 	buf := bytes.NewBuffer(b)
 // 	// 消息类型
-// 	mType := buf.Next(SIZE_OF_TYPE)
+// 	mType := buf.Next(sizeType)
 // 	bufType := bytes.NewBuffer(mType)
 // 	binary.Read(bufType, binary.LittleEndian, &m.Type)
 // 	// 消息大小
-// 	mSize := buf.Next(SIZE_OF_SIZE)
+// 	mSize := buf.Next(sizeSize)
 // 	bufSize := bytes.NewBuffer(mSize)
 // 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 // 	// // 超限则返回错误
-// 	// if m.Size > MAX_BUFFER {
-// 	// 	return m, errors.New("OVER_MAX_BUFFER")
+// 	// if m.Size > maxBuffer {
+// 	// 	return m, errors.New("OVER_maxBuffer")
 // 	// }
 // 	// 消息正文
 // 	mContent := buf.Bytes()
-// 	rest := int(m.Size - int32(SIZE_OF_HEAD))
+// 	rest := int(m.Size - int32(sizeHead))
 // 	if rest > 0 {
 // 		if rest > len(mContent)-1 {
 // 			m.Content = mContent
@@ -97,13 +97,13 @@ func UnPack(b []byte) (Msg, error) {
 // 	return m, nil
 // }
 
-// 打包消息，返回[]byte
+// Pack 打包消息，返回[]byte
 func Pack(mType int32, mContent []byte) []byte {
 	buf := new(bytes.Buffer)
 	// 消息类型
 	binary.Write(buf, binary.LittleEndian, mType)
 	// 消息大小
-	mSize := int32(SIZE_OF_HEAD + len(mContent))
+	mSize := int32(sizeHead + len(mContent))
 	binary.Write(buf, binary.LittleEndian, mSize)
 	// 消息正文
 	binary.Write(buf, binary.LittleEndian, mContent)
@@ -111,7 +111,8 @@ func Pack(mType int32, mContent []byte) []byte {
 	return b
 }
 
-func MsgRequest(addr net.TCPAddr, b []byte) *net.TCPConn {
+// Request ...
+func Request(addr net.TCPAddr, b []byte) *net.TCPConn {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
 		fmt.Printf("SingleRequest.DialTCP:%v", e)
@@ -125,6 +126,7 @@ func MsgRequest(addr net.TCPAddr, b []byte) *net.TCPConn {
 	return conn
 }
 
+// SingleRequest ...
 func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	conn, e := net.DialTCP("tcp", nil, &addr)
 	if e != nil {
@@ -139,16 +141,18 @@ func SingleRequest(addr net.TCPAddr, b []byte) Msg {
 	return m
 }
 
+// SingleWrite ...
 func SingleWrite(conn *net.TCPConn, b []byte) []byte {
 	conn.Write(b)
 	return b
 }
 
+// SingleRead ...
 func SingleRead(conn *net.TCPConn) Msg {
 
 	m := Msg{}
 
-	b := make([]byte, SIZE_OF_HEAD)
+	b := make([]byte, sizeHead)
 	for { // 循环到读取到内容为止
 		i, e := conn.Read(b)
 		if e != nil && e != io.EOF { // 网络有错,则退出循环
@@ -165,16 +169,16 @@ func SingleRead(conn *net.TCPConn) Msg {
 	buf := bytes.NewBuffer(b)
 
 	// 消息类型
-	mType := buf.Next(SIZE_OF_TYPE)
+	mType := buf.Next(sizeType)
 	bufType := bytes.NewBuffer(mType)
 	binary.Read(bufType, binary.LittleEndian, &m.Type)
 
 	// 消息大小
-	mSize := buf.Next(SIZE_OF_SIZE)
+	mSize := buf.Next(sizeSize)
 	bufSize := bytes.NewBuffer(mSize)
 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 
-	size := int(m.Size) - SIZE_OF_HEAD
+	size := int(m.Size) - sizeHead
 	if size <= 0 {
 		return m
 	}
@@ -190,6 +194,7 @@ func SingleRead(conn *net.TCPConn) Msg {
 	return m
 }
 
+// CopyBytes ...
 func CopyBytes(a, b []byte) []byte {
 	n := len(a)
 	result := make([]byte, n+len(b))
@@ -198,10 +203,11 @@ func CopyBytes(a, b []byte) []byte {
 	return result
 }
 
-func PackMsgBig(mContent []byte) []byte {
+// PackBig ...
+func PackBig(mContent []byte) []byte {
 	buf := new(bytes.Buffer)
 	// 消息大小
-	mSize := int64(SIZE_OF_SIZE_BIG + len(mContent))
+	mSize := int64(sizeSizeBIG + len(mContent))
 	binary.Write(buf, binary.LittleEndian, mSize)
 	// 消息正文
 	binary.Write(buf, binary.LittleEndian, mContent)
@@ -209,20 +215,21 @@ func PackMsgBig(mContent []byte) []byte {
 	return b
 }
 
-func UnpackMsgBig(b []byte) (MsgBig, error) {
-	m := MsgBig{}
+// UnpackBig ...
+func UnpackBig(b []byte) (Big, error) {
+	m := Big{}
 	buf := bytes.NewBuffer(b)
 	// 消息大小
-	mSize := buf.Next(SIZE_OF_SIZE_BIG)
+	mSize := buf.Next(sizeSizeBIG)
 	bufSize := bytes.NewBuffer(mSize)
 	binary.Read(bufSize, binary.LittleEndian, &m.Size)
 	// 超限则返回错误
-	if m.Size > MAX_BUFFER_BIG {
-		return m, errors.New("OVER_MAX_BUFFER_BIG")
+	if m.Size > maxBufferBIG {
+		return m, errors.New("OVER_maxBufferBIG")
 	}
 	// 消息正文
 	mContent := buf.Bytes()
-	rest := int(m.Size - int32(SIZE_OF_SIZE_BIG))
+	rest := int(m.Size - int32(sizeSizeBIG))
 	if rest > 0 {
 		if rest > len(mContent)-1 {
 			m.Content = mContent
